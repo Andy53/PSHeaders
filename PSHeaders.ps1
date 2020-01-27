@@ -38,7 +38,7 @@ function Show-Help{
     Write-Host "                   in CSV format."  
     Write-Host "    -CookieName  - Used when supplying a cookie with a web reqest. "
     Write-Host "                   Name of the cookie to be supplied. Must be used in"
-    Write-Host "                   conjunction with -CookieString"
+    Write-Host "                   conjunction with -CookieValue"
     Write-Host "    -CookieValue - Used when supplying a cookie with a web reqest. "
     Write-Host "                   Value of the cookie to be supplied. Must be used "
     Write-Host "                   in conjunction with -CookieName" 
