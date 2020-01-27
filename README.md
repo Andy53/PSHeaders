@@ -6,7 +6,7 @@ The script can simply be downloaded on Windows and run from a Powershell termina
 
 If on OSX or Linux first install Powershell full instructions can be found [here](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-7) however it is included in most good pacakge managers.       
 
-Usage:                                            
+## Usage                                            
     -Help        - Display this message.                
     -Url         - Specifies the URL to use                         
     -File        - Specifies a file contianing URL's to be used.               
