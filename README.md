@@ -18,7 +18,7 @@ Then use `pwsh PSHeaders.ps1 -Help` to see the help menu below along with a nice
                    in CSV format.                                               
     -CookieName  - Used when supplying a cookie with a web reqest.                      
                    Name of the cookie to be supplied. Must be used in               
-                   conjunction with -CookieString                               
+                   conjunction with -CookieValue                               
     -CookieValue - Used when supplying a cookie with a web reqest.                  
                    Value of the cookie to be supplied. Must be used                 
                    in conjunction with -CookieName                           
