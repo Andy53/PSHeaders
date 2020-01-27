@@ -1,16 +1,11 @@
 # PSHeaders
 A Poweshell script for testing HTTP Headers
 
-    ____  _____ __  __               __                  
-   / __ \/ ___// / / /__  ____ _____/ /__  __________    
-  / /_/ /\__ \/ /_/ / _ \/ __ / __  / _ \/ ___/ ___/    
- / ____/___/ / __  /  __/ /_/ / /_/ /  __/ /  (__  )      
-/_/    /____/_/ /_/\___/\__,_/\__,_/\___/_/  /____/          
------------------------------------------------------      
-Author : Andy Bowden                        
-Email  : Andy.Bowden@coalfire.com                 
-Version: PSHeaders-0.1                                       
------------------------------------------------------              
+## Setup
+The script can simply be downloaded on Windows and run from a Powershell terminal.
+
+If on OSX or Linux first install Powershell full instructions can be found [here](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-7) however it is included in most good pacakge managers.       
+
 Usage:                                            
     -Help        - Display this message.                
     -Url         - Specifies the URL to use                         
