@@ -1,4 +1,4 @@
-param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy)
+param($File="test.txt", $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy)
 
 function Set-Cookie{
     param([string] $cookieName, [string] $cookieString, [string]$urlString)
@@ -306,6 +306,15 @@ if($File){
                 $element = $line, "X-Frame-Options", "Not Found"
                 [void]$CsvArrayList.Add($element)
             }
+            if ($response.Headers["Server"]) {
+                $output = $response.Headers["Server"]
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
+                Write-Host "$line Server = $output | " -NoNewline
+                Write-Host -ForegroundColor Red "This header should be surpressed if possible."
+                $OutputString.Add("$line Server found")
+                $element = $line, "Server", "Not Found"
+                [void]$CsvArrayList.Add($element)
+            }
             $respone = ''
         }
         catch {
@@ -513,6 +522,15 @@ if($Url){
                 Write-Output "$Url X-Frame-Options Not found"
                 $OutputString.Add("$Url X-Frame-Options Not found")
                 $element = $Url, "X-Frame-Options", "Not Found"
+                [void]$CsvArrayList.Add($element)
+            }
+            if ($response.Headers["Server"]) {
+                $output = $response.Headers["Server"]
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
+                Write-Host "$Url Server = $output | " -NoNewline
+                Write-Host -ForegroundColor Red "This header should be surpressed if possible."
+                $OutputString.Add("$Url Server found")
+                $element = $Url, "Server", "Not Found"
                 [void]$CsvArrayList.Add($element)
             }
             $respone = ''
