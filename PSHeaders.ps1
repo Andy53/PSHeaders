@@ -1,4 +1,4 @@
-param($File="test.txt", $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy)
+param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy)
 
 function Set-Cookie{
     param([string] $cookieName, [string] $cookieString, [string]$urlString)
