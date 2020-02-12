@@ -140,7 +140,7 @@ if($File){
             #------------------Cache-Control--------------------------------------------------
             if ($response.Headers["Cache-Control"]) {
                 $output = $response.Headers["Cache-Control"]
-                if($output -like "no-cache" -and $output -like "no-store"){
+                if($output -match "no-cache" -and $output -match "no-store"){
                     Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line Cache-Control Found = $output"
                     $OutputString.Add("$line Cache-Control Found = $output")
@@ -149,9 +149,9 @@ if($File){
                 else{
                     Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$line Cache-Control Found = $output | " -NoNewline
-                    Write-Host -ForegroundColor Yellow "Should be 'no-store'"
-                    $OutputString.Add("$line Cache-Control Found = $output | Should be 'no-cache, no-store'")
-                    $element = $line, "Cache-Control", "$output | Should be 'no-cache, no-store'"
+                    Write-Host -ForegroundColor Yellow "Should contain 'no-cache, no-store'"
+                    $OutputString.Add("$line Cache-Control Found = $output | Should contain 'no-cache, no-store'")
+                    $element = $line, "Cache-Control", "$output | Should contain 'no-cache, no-store'"
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
@@ -358,7 +358,7 @@ if($Url){
                     #------------------Cache-Control--------------------------------------------------
             if ($response.Headers["Cache-Control"]) {
                 $output = $response.Headers["Cache-Control"]
-                if($output -like "no-cache" -and $output -like "no-store"){
+                if($output -match "no-cache" -and $output -match "no-store"){
                     Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url Cache-Control Found = $output"
                     $OutputString.Add("$Url Cache-Control Found = $output")
@@ -367,9 +367,9 @@ if($Url){
                 else{
                     Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$Url Cache-Control Found = $output | " -NoNewline
-                    Write-Host -ForegroundColor Yellow "Should be 'no-store'"
-                    $OutputString.Add("$Url Cache-Control Found = $output | Should be 'no-cache, no-store'")
-                    $element = $Url, "Cache-Control", "$output | Should be 'no-cache, no-store'"
+                    Write-Host -ForegroundColor Yellow "Should contain 'no-cache, no-store'"
+                    $OutputString.Add("$Url Cache-Control Found = $output | Should contain 'no-cache, no-store'")
+                    $element = $Url, "Cache-Control", "$output | Should contain 'no-cache, no-store'"
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
