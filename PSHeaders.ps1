@@ -140,7 +140,7 @@ if($File){
             #------------------Cache-Control--------------------------------------------------
             if ($response.Headers["Cache-Control"]) {
                 $output = $response.Headers["Cache-Control"]
-                if($output -eq "no-cache, no-store"){
+                if($output -like "no-cache" -and $output -like "no-store"){
                     Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line Cache-Control Found = $output"
                     $OutputString.Add("$line Cache-Control Found = $output")
@@ -358,7 +358,7 @@ if($Url){
                     #------------------Cache-Control--------------------------------------------------
             if ($response.Headers["Cache-Control"]) {
                 $output = $response.Headers["Cache-Control"]
-                if($output -eq "no-cache, no-store"){
+                if($output -like "no-cache" -and $output -like "no-store"){
                     Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url Cache-Control Found = $output"
                     $OutputString.Add("$Url Cache-Control Found = $output")
