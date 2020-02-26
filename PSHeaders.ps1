@@ -1,4 +1,4 @@
-param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy)
+param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy, $Cert)
 
 function Set-Cookie{
     param([string] $cookieName, [string] $cookieString, [string]$urlString)
@@ -35,6 +35,7 @@ function Show-Help{
     Write-Host "    -Proxy       - Proxy server to use. E.g. http://127.0.0.1:8000"
     Write-Host "    -OutputFile  - The location where output will be written to disk."
     Write-Host "    -Csv         - The location where output will be written to disk" 
+    Write-Host "    -Cert        - Specifices a PFX file to use as the client certificate"
     Write-Host "                   in CSV format."  
     Write-Host "    -CookieName  - Used when supplying a cookie with a web reqest. "
     Write-Host "                   Name of the cookie to be supplied. Must be used in"
@@ -114,27 +115,76 @@ if($File){
             if($LinuxOS -eq $true){
                 if($CookieName -and $CookieValue){
                     $Session = Set-Cookie($CookieName, $CookieValue, $line)
-                    $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    }
                 }
                 elseif($CookieName -xor $CookieValue){
                     Write-Output "If a cookie is to be sent with the web request both CookieName and CookieValue must be provided."
                     exit
                 }
                 else{
-                    $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    }
                 }
             }
             else{
                 if($CookieName -and $CookieValue){
                     $Session = Set-Cookie($CookieName, $CookieValue, $line)
-                    $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy
+                    }
+                    
                 }
                 elseif($CookieName -xor $CookieValue){
                     Write-Output "If a cookie is to be sent with the web request both CookieName and CookieValue must be provided."
                     exit
                 }
                 else{
-                    $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy
+                    }
                 }
             }
             #------------------Cache-Control--------------------------------------------------
@@ -332,27 +382,75 @@ if($Url){
         if($LinuxOS -eq $true){
             if($CookieName -and $CookieValue){
                     $Session = Set-Cookie($CookieName, $CookieValue, $Url)
-                    $response = iwr $Url -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    }
                 }
                 elseif($CookieName -xor $CookieValue){
                     Write-Output "If a cookie is to be sent with the web request both CookieName and CookieValue must be provided."
                     exit
                 }
                 else{
-                    $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck
+                    }
                 }
             }
             else{
                 if($CookieName -and $CookieValue){
                     $Session = Set-Cookie($CookieName, $CookieValue, $Url)
-                    $response = iwr $Url -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $Url -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $Url -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy
+                    }
                 }
                 elseif($CookieName -xor $CookieValue){
                     Write-Output "If a cookie is to be sent with the web request both CookieName and CookieValue must be provided."
                     exit
                 }
                 else{
-                    $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                    }
                 }
             }
                     #------------------Cache-Control--------------------------------------------------
@@ -536,7 +634,7 @@ if($Url){
             $respone = ''
     }
     catch {
-        Write-Host "An error occurred performing the request to $line"
+        Write-Host "An error occurred performing the request to $Url"
         Write-Host $_
     }
     Write-Output "-----------------------------------------------------"
