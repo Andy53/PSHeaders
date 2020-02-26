@@ -15,7 +15,8 @@ Then use `pwsh PSHeaders.ps1 -Help` to see the help menu below along with a nice
     -Proxy       - Proxy server to use. E.g. http://127.0.0.1:8000              
     -OutputFile  - The location where output will be written to disk.          
     -Csv         - The location where output will be written to disk            
-                   in CSV format.                                               
+                   in CSV format.         
+    -Cert        - Specifices a PFX file to use as the client certificate                                                     
     -CookieName  - Used when supplying a cookie with a web reqest.                      
                    Name of the cookie to be supplied. Must be used in               
                    conjunction with -CookieValue                               
