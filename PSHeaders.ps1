@@ -1,4 +1,4 @@
-param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy, $Cert)
+param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy, $Cert, $Verb)
 
 function Set-Cookie{
     param([string] $cookieName, [string] $cookieString, [string]$urlString)
@@ -23,7 +23,7 @@ function Show-Help{
     Write-Host "-----------------------------------------------------"
     Write-Host "Author : Andy Bowden"
     Write-Host "Email  : Andy.Bowden@coalfire.com"
-    Write-Host "Version: PSHeaders-0.1"
+    Write-Host "Version: PSHeaders-0.2"
     if($message -ne ""){
         Write-Host -ForegroundColor Red  "Error = $message"
     }
@@ -37,6 +37,9 @@ function Show-Help{
     Write-Host "    -Csv         - The location where output will be written to disk"
     Write-Host "                   in CSV format."   
     Write-Host "    -Cert        - Specifices a PFX file to use as the client certificate"
+    Write-Host "    -Verb        - Specifies the HTTP Verb to use e.g. GET, PUT, POST etc."
+    Write-Host "                   Currently Powershell versions prior to 6.0 can only use"
+    Write-Host "                   Standard verbs."
     Write-Host "    -CookieName  - Used when supplying a cookie with a web reqest. "
     Write-Host "                   Name of the cookie to be supplied. Must be used in"
     Write-Host "                   conjunction with -CookieValue"
@@ -49,7 +52,8 @@ function Show-Help{
 $LinuxOS = $False
 $WindowsOS= $False
 
-if ($IsWindows -or $ENV:OS) {
+#if ($IsWindows -or $ENV:OS) {
+if($PSVersionTable.PSVersion.Major -le 5){
 add-type @"
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -107,6 +111,47 @@ if($Csv){
     }
 }
 
+if($Verb){
+    $displayWarning = $true
+    if($Verb.ToUpper() -eq "GET"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "HEAD"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "POST"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "PUT"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "DELETE"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "CONNECT"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "OPTIONS"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "TRACE"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "TRACK"){
+        $displayWarning = $false
+    }
+    if($Verb.ToUpper() -eq "PATCH"){
+        $displayWarning = $false
+    }
+    if($displayWarning -eq $true){
+        Write-Host -ForegroundColor Yellow "[•]" -NoNewline
+        Write-Host "Warning: Non standard HTTP verb used: $Verb"
+    }
+}
+else{
+    $verb = "Head"
+}
+
 if($File){
     foreach($line in Get-Content $File) {
         try { 
@@ -119,14 +164,14 @@ if($File){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                         }
                         else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                            $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck
+                        $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                     }
                 }
                 elseif($CookieName -xor $CookieValue){
@@ -138,14 +183,14 @@ if($File){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                            $response = iwr $line -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                         }
                         else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                            $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck
+                        $response = iwr $line -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                     }
                 }
             }
@@ -156,14 +201,14 @@ if($File){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -Certificate $Cert
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy -Certificate $Cert
                         }
                         else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                            $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy
+                        $response = iwr $line -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy
                     }
                     
                 }
@@ -176,14 +221,14 @@ if($File){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy -Certificate $Cert
+                            $response = iwr $line -UseBasicParsing -Method $Verb -Proxy $Proxy -Certificate $Cert
                         }
                         else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                            $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $line -UseBasicParsing -Method Head -Proxy $Proxy
+                        $response = iwr $line -UseBasicParsing -Method $Verb -Proxy $Proxy
                     }
                 }
             }
@@ -386,14 +431,14 @@ if($Url){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                         }
                         else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                            $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $line -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -SkipCertificateCheck
+                        $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                     }
                 }
                 elseif($CookieName -xor $CookieValue){
@@ -405,54 +450,54 @@ if($Url){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                            $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                         }
                         else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
+                            $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy -SkipCertificateCheck
+                        $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                     }
                 }
+            }
+        else{
+            if($CookieName -and $CookieValue){
+                $Session = Set-Cookie($CookieName, $CookieValue, $Url)
+                if($Cert){
+                    $Exists = Test-Path $Cert
+                    if($Exists -eq $True){
+                        $Cert = Get-PfxCertificate -FilePath $Cert
+                        $response = iwr $Url -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy -Certificate $Cert
+                    }
+                    else{
+                        $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
+                    }
+                }
+                else{
+                    $response = iwr $Url -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy
+                }
+            }
+            elseif($CookieName -xor $CookieValue){
+                Write-Output "If a cookie is to be sent with the web request both CookieName and CookieValue must be provided."
+                exit
             }
             else{
-                if($CookieName -and $CookieValue){
-                    $Session = Set-Cookie($CookieName, $CookieValue, $Url)
-                    if($Cert){
-                        $Exists = Test-Path $Cert
-                        if($Exists -eq $True){
-                            $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $Url -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy -Certificate $Cert
-                        }
-                        else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
-                        }
+                if($Cert){
+                    $Exists = Test-Path $Cert
+                    if($Exists -eq $True){
+                        $Cert = Get-PfxCertificate -FilePath $Cert
+                        $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy -Certificate $Cert
                     }
                     else{
-                        $response = iwr $Url -UseBasicParsing -WebSession $Session -Method Head -Proxy $Proxy
+                        $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
                     }
-                }
-                elseif($CookieName -xor $CookieValue){
-                    Write-Output "If a cookie is to be sent with the web request both CookieName and CookieValue must be provided."
-                    exit
                 }
                 else{
-                    if($Cert){
-                        $Exists = Test-Path $Cert
-                        if($Exists -eq $True){
-                            $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy -Certificate $Cert
-                        }
-                        else{
-                            $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
-                        }
-                    }
-                    else{
-                        $response = iwr $Url -UseBasicParsing -Method Head -Proxy $Proxy
-                    }
+                    $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
                 }
             }
+        }
                     #------------------Cache-Control--------------------------------------------------
             if ($response.Headers["Cache-Control"]) {
                 $output = $response.Headers["Cache-Control"]
