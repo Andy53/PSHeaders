@@ -290,7 +290,7 @@ if($File){
             #-------------------Strict-Transport-Security------------------------------------
             if ($response.Headers["Strict-Transport-Security"]) {
                 $output = $response.Headers["Strict-Transport-Security"]
-                if($output -like "includeSubDomains"){
+                if($output -match "includeSubDomains"){
                     Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line Strict-Transport-Security Found = $output"
                     $OutputString.Add("$line Strict-Transport-Security Found = $output")
@@ -563,7 +563,7 @@ if($Url){
             #-------------------Strict-Transport-Security------------------------------------
             if ($response.Headers["Strict-Transport-Security"]) {
                 $output = $response.Headers["Strict-Transport-Security"]
-                if($output -like "includeSubDomains"){
+                if($output -match "includeSubDomains"){
                     Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url Strict-Transport-Security Found = $output"
                     $OutputString.Add("$Url Strict-Transport-Security Found = $output")
