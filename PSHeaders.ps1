@@ -53,7 +53,7 @@ $LinuxOS = $False
 $WindowsOS= $False
 
 #if ($IsWindows -or $ENV:OS) {
-if($PSVersionTable.PSVersion.Major -le 5){
+if($IsWindows -or $ENV:OS){
 add-type @"
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -68,7 +68,11 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 Invoke-WebRequest https://expired.badssl.com/ -UseBasicParsing | Out-Null
     $WindowsOS = $true
-} 
+if($PSVersionTable.PSVersion.Major -le 5){
+    $LinuxOS = $true
+    $WindowsOS = $false
+}
+}
 else {
     $LinuxOS = $true
 }
