@@ -1,4 +1,4 @@
-param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy, $Cert, $Verb)
+param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy, $Cert, $Verb, [Switch]$Verbose)
 
 function Set-Cookie{
     param([string] $cookieName, [string] $cookieString, [string]$urlString)
@@ -40,6 +40,7 @@ function Show-Help{
     Write-Host "    -Verb        - Specifies the HTTP Verb to use e.g. GET, PUT, POST etc."
     Write-Host "                   Currently Powershell versions prior to 6.0 can only use"
     Write-Host "                   Standard verbs."
+    Write-Host "    -Verbose     - Provides verbose output."
     Write-Host "    -CookieName  - Used when supplying a cookie with a web reqest. "
     Write-Host "                   Name of the cookie to be supplied. Must be used in"
     Write-Host "                   conjunction with -CookieValue"
@@ -68,10 +69,6 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 Invoke-WebRequest https://expired.badssl.com/ -UseBasicParsing | Out-Null
     $WindowsOS = $true
-if($PSVersionTable.PSVersion.Major -le 5){
-    $LinuxOS = $true
-    $WindowsOS = $false
-}
 }
 else {
     $LinuxOS = $true
@@ -100,7 +97,7 @@ if($OutputFile){
 
     }
     else{
-        Write-Host -ForegroundColor Red "[â€¢] ERROR - " -NoNewline
+        Write-Host -ForegroundColor Red "[•] ERROR - " -NoNewline
         Write-Host "You have not entered a valid file name for the output file. Output will not be written to disk."
     }
 }
@@ -110,7 +107,7 @@ if($Csv){
         $WriteToCSVe = $true
     }
     else{
-        Write-Host -ForegroundColor Red "[â€¢] ERROR - " -NoNewline
+        Write-Host -ForegroundColor Red "[•] ERROR - " -NoNewline
         Write-Host "You have not entered a valid file name for the CSV file. Output will not be written in CSV format."
     }
 }
@@ -148,7 +145,7 @@ if($Verb){
         $displayWarning = $false
     }
     if($displayWarning -eq $true){
-        Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+        Write-Host -ForegroundColor Yellow "[•]" -NoNewline
         Write-Host "Warning: Non standard HTTP verb used: $Verb"
     }
 }
@@ -239,21 +236,37 @@ if($File){
                 }
             }
             catch [System.Net.WebException] {
-                Write-Host -ForegroundColor Red "[â€¢] Exception: " -NoNewline
+                Write-Host -ForegroundColor Red "[•] Exception: " -NoNewline
                 Write-Host $_ 
                 $response = $_.Exception.Response
+            }
+            catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+                Write-Host -ForegroundColor Red "[•] Exception: " -NoNewline
+                Write-Host $_ 
+                $response = [Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject]$_.Exception.Response
+            }
+            if($Verbose){
+                if($IsLinux){
+                    Write-Host $response.BaseResponse
+                }
+                else{
+                    Write-Host "Type: " $response.GetType()
+                    $output = [Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject]$response
+                    Write-Host $output.RawContent
+                }
+	        Write-Output "-----------------------------------------------------"
             }
             #------------------Cache-Control--------------------------------------------------
             if ($response.Headers["Cache-Control"]) {
                 $output = $response.Headers["Cache-Control"]
                 if($output -match "no-cache" -and $output -match "no-store"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line Cache-Control Found = $output"
                     $OutputString.Add("$line Cache-Control Found = $output")
                     $element = $line, "Cache-Control", $output
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$line Cache-Control Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should contain 'no-cache, no-store'"
                     $OutputString.Add("$line Cache-Control Found = $output | Should contain 'no-cache, no-store'")
@@ -261,7 +274,7 @@ if($File){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line Cache-Control Not found"
                 $OutputString.Add("$line Cache-Control Not found")
                 $element = $line, "Cache-Control", "Not Found"
@@ -271,13 +284,13 @@ if($File){
             if ($response.Headers["X-Content-Type-Options"]) {
                 $output = $response.Headers["X-Content-Type-Options"]
                 if($output -eq "nosniff"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line X-Content-Type-Options Found = $output"
                     $OutputString.Add("$line X-Content-Type-Options Found = $output")
                     $element = $line, "X-Content-Type-Options", $output
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$line X-Content-Type-Options Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should be 'nosniff'"
                     $OutputString.Add("$line X-Content-Type-Options Found = $output | Should be 'nosniff'")
@@ -285,7 +298,7 @@ if($File){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line X-Content-Type-Options Not found"
                 $OutputString.Add("$line X-Content-Type-Options Not found")
                 $element = $line, "X-Content-Type-Options", "Not Found"
@@ -295,14 +308,14 @@ if($File){
             if ($response.Headers["Strict-Transport-Security"]) {
                 $output = $response.Headers["Strict-Transport-Security"]
                 if($output -match "includeSubDomains"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line Strict-Transport-Security Found = $output"
                     $OutputString.Add("$line Strict-Transport-Security Found = $output")
                     $element = $line, "Strict-Transport-Security", $output
                     [void]$CsvArrayList.Add($element)
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$line Strict-Transport-Security Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Missing 'includeSubDomains' flag" 
                     $OutputString.Add("$line Strict-Transport-Security Found = $output | Missing 'includeSubDomains' flag")
@@ -311,7 +324,7 @@ if($File){
                 }
                 
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line Strict-Transport-Security Not found"
                 $OutputString.Add("$line Strict-Transport-Security Not found")
                 $element = $line, "Strict-Transport-Security", "Not Found"
@@ -320,13 +333,13 @@ if($File){
             #-------------------Referrer-Polic----------------------------------------------
             if ($response.Headers["Referrer-Policy"]) {
                 $output = $response.Headers["Referrer-Policy"]
-                Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Green "[•]" -NoNewline
                 Write-Output "$line Referrer-Policy Found = $output"
                 $OutputString.Add("$line Referrer-Policy Found = $output")
                 $element = $line, "Referrer-Policy", $output
                 [void]$CsvArrayList.Add($element)
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line Referrer-Policy Not found"
                 $OutputString.Add("$line Referrer-Policy Not found")
                 $element = $line, "Referrer-Policy", "Not Found"
@@ -336,14 +349,14 @@ if($File){
             if ($response.Headers["X-Xss-Protection"]) {
                 $output = $response.Headers["X-Xss-Protection"]
                 if($output -eq "1; mode=block"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line X-Xss-Protection Found = $output"
                     $OutputString.Add("$line X-Xss-Protection Found = $output")
                     $element = $line, "X-Xss-Protection", $output
                     [void]$CsvArrayList.Add($element)
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$line X-Xss-Protection Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should be '1; mode=block' flag" 
                     $OutputString.Add("$line X-Xss-Protection Found = $output | Should be '1; mode=block'")
@@ -351,7 +364,7 @@ if($File){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line X-Xss-Protection Not found"
                 $OutputString.Add("$line X-Xss-Protection Not found")
                 $element = $line, "X-Xss-Protection", "Not Found"
@@ -360,13 +373,13 @@ if($File){
             #-----------------------Content-Security-Policy------------------------------------------
             if ($response.Headers["Content-Security-Policy"]) {
                 $output = $response.Headers["Content-Security-Policy"]
-                Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Green "[•]" -NoNewline
                 Write-Output "$line Content-Security-Policy Found = $output"
                 $OutputString.Add("$line Content-Security-Policy Found = $output")
                 $element = $line, "Content-Security-Policy", $output
                 [void]$CsvArrayList.Add($element)
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line Content-Security-Policy Not found"
                 $OutputString.Add("$line Content-Security-Policy Not found")
                 $element = $line, "Content-Security-Policy", "Not Found"
@@ -375,13 +388,13 @@ if($File){
             #-----------------------Feature-Policy------------------------------------------
             if ($response.Headers["Feature-Policy"]) {
                 $output = $response.Headers["Feature-Policy"]
-                Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Green "[•]" -NoNewline
                 Write-Output "$line Feature-Policy Found = $output"
                 $OutputString.Add("$line Feature-Policy Found = $output")
                 $element = $line, "Feature-Policy", $output
                 [void]$CsvArrayList.Add($element)
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line Feature-Policy Not found"
                 $OutputString.Add("$line Feature-Policy Not found")
                 $element = $line, "Feature-Policy", "Not Found"
@@ -391,14 +404,14 @@ if($File){
             if ($response.Headers["X-Frame-Options"]) {
                 $output = $response.Headers["X-Frame-Options"]
                 if($output -eq "deny" -or $output -eq "sameorigin"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$line X-Frame-Options Found = $output"
                     $OutputString.Add("$line X-Frame-Options Found = $output")
                     $element = $line, "X-Frame-Options", $output
                     [void]$CsvArrayList.Add($element)
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$line X-Frame-Options Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should be '1; mode=block' or 'sameorigin'" 
                     $OutputString.Add("$line X-Frame-Options = $output | Should be '1; mode=block' or 'sameorigin'")
@@ -406,7 +419,7 @@ if($File){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$line X-Frame-Options Not found"
                 $OutputString.Add("$line X-Frame-Options Not found")
                 $element = $line, "X-Frame-Options", "Not Found"
@@ -414,7 +427,7 @@ if($File){
             }
             if ($response.Headers["Server"]) {
                 $output = $response.Headers["Server"]
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Host "$line Server = $output | " -NoNewline
                 Write-Host -ForegroundColor Red "This header should be surpressed if possible."
                 $OutputString.Add("$line Server found")
@@ -512,21 +525,39 @@ if($Url){
             }
             } 
             catch [System.Net.WebException] {
-                Write-Host -ForegroundColor Red "[â€¢] Exception: " -NoNewline
+                Write-Host -ForegroundColor Red "[•] Exception: " -NoNewline
                 Write-Host $_ 
                 $response = $_.Exception.Response
             }
-            #------------------Cache-Control--------------------------------------------------
+	        catch {
+                if($IsLinux){
+                    Write-Host -ForegroundColor Red "[•] Exception: " -NoNewline
+                    Write-Host $_ 
+                    $response = [Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject]$_.Exception.Response
+                }
+            }
+            if($Verbose){
+                if($IsLinux){
+                    Write-Host $response.BaseResponse
+                }
+                else{
+                    Write-Host "Type: " $response.GetType()
+                    $output = [Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject]$response
+                    Write-Host $output.RawContent
+                }
+	            Write-Output "-----------------------------------------------------"
+            }
+            #------------------Cache-Control--------------------------------------------------  
             if ($response.Headers["Cache-Control"]) {
                 $output = $response.Headers["Cache-Control"]
                 if($output -match "no-cache" -and $output -match "no-store"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url Cache-Control Found = $output"
                     $OutputString.Add("$Url Cache-Control Found = $output")
                     $element = $Url, "Cache-Control", $output
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$Url Cache-Control Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should contain 'no-cache, no-store'"
                     $OutputString.Add("$Url Cache-Control Found = $output | Should contain 'no-cache, no-store'")
@@ -534,7 +565,7 @@ if($Url){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url Cache-Control Not found"
                 $OutputString.Add("$Url Cache-Control Not found")
                 $element = $Url, "Cache-Control", "Not Found"
@@ -544,13 +575,13 @@ if($Url){
             if ($response.Headers["X-Content-Type-Options"]) {
                 $output = $response.Headers["X-Content-Type-Options"]
                 if($output -eq "nosniff"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url X-Content-Type-Options Found = $output"
                     $OutputString.Add("$Url X-Content-Type-Options Found = $output")
                     $element = $Url, "X-Content-Type-Options", $output
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$Url X-Content-Type-Options Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should be 'nosniff'"
                     $OutputString.Add("$Url X-Content-Type-Options Found = $output | Should be 'nosniff'")
@@ -558,7 +589,7 @@ if($Url){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url X-Content-Type-Options Not found"
                 $OutputString.Add("$Url X-Content-Type-Options Not found")
                 $element = $Url, "X-Content-Type-Options", "Not Found"
@@ -568,14 +599,14 @@ if($Url){
             if ($response.Headers["Strict-Transport-Security"]) {
                 $output = $response.Headers["Strict-Transport-Security"]
                 if($output -match "includeSubDomains"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url Strict-Transport-Security Found = $output"
                     $OutputString.Add("$Url Strict-Transport-Security Found = $output")
                     $element = $Url, "Strict-Transport-Security", $output
                     [void]$CsvArrayList.Add($element)
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$Url Strict-Transport-Security Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Missing 'includeSubDomains' flag" 
                     $OutputString.Add("$Url Strict-Transport-Security Found = $output | Missing 'includeSubDomains' flag")
@@ -584,7 +615,7 @@ if($Url){
                 }
                 
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url Strict-Transport-Security Not found"
                 $OutputString.Add("$Url Strict-Transport-Security Not found")
                 $element = $Url, "Strict-Transport-Security", "Not Found"
@@ -593,13 +624,13 @@ if($Url){
             #-------------------Referrer-Polic----------------------------------------------
             if ($response.Headers["Referrer-Policy"]) {
                 $output = $response.Headers["Referrer-Policy"]
-                Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Green "[•]" -NoNewline
                 Write-Output "$Url Referrer-Policy Found = $output"
                 $OutputString.Add("$Url Referrer-Policy Found = $output")
                 $element = $Url, "Referrer-Policy", $output
                 [void]$CsvArrayList.Add($element)
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url Referrer-Policy Not found"
                 $OutputString.Add("$Url Referrer-Policy Not found")
                 $element = $Url, "Referrer-Policy", "Not Found"
@@ -609,14 +640,14 @@ if($Url){
             if ($response.Headers["X-Xss-Protection"]) {
                 $output = $response.Headers["X-Xss-Protection"]
                 if($output -eq "1; mode=block"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url X-Xss-Protection Found = $output"
                     $OutputString.Add("$Url X-Xss-Protection Found = $output")
                     $element = $Url, "X-Xss-Protection", $output
                     [void]$CsvArrayList.Add($element)
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$Url X-Xss-Protection Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should be '1; mode=block' flag" 
                     $OutputString.Add("$Url X-Xss-Protection Found = $output | Should be '1; mode=block'")
@@ -624,7 +655,7 @@ if($Url){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url X-Xss-Protection Not found"
                 $OutputString.Add("$Url X-Xss-Protection Not found")
                 $element = $Url, "X-Xss-Protection", "Not Found"
@@ -633,13 +664,13 @@ if($Url){
             #-----------------------Content-Security-Policy------------------------------------------
             if ($response.Headers["Content-Security-Policy"]) {
                 $output = $response.Headers["Content-Security-Policy"]
-                Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Green "[•]" -NoNewline
                 Write-Output "$Url Content-Security-Policy Found = $output"
                 $OutputString.Add("$Url Content-Security-Policy Found = $output")
                 $element = $Url, "Content-Security-Policy", $output
                 [void]$CsvArrayList.Add($element)
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url Content-Security-Policy Not found"
                 $OutputString.Add("$Url Content-Security-Policy Not found")
                 $element = $Url, "Content-Security-Policy", "Not Found"
@@ -648,13 +679,13 @@ if($Url){
             #-----------------------Feature-Policy------------------------------------------
             if ($response.Headers["Feature-Policy"]) {
                 $output = $response.Headers["Feature-Policy"]
-                Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Green "[•]" -NoNewline
                 Write-Output "$Url Feature-Policy Found = $output"
                 $OutputString.Add("$Url Feature-Policy Found = $output")
                 $element = $Url, "Feature-Policy", $output
                 [void]$CsvArrayList.Add($element)
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url Feature-Policy Not found"
                 $OutputString.Add("$Url Feature-Policy Not found")
                 $element = $Url, "Feature-Policy", "Not Found"
@@ -664,14 +695,14 @@ if($Url){
             if ($response.Headers["X-Frame-Options"]) {
                 $output = $response.Headers["X-Frame-Options"]
                 if($output -eq "deny" -or $output -eq "sameorigin"){
-                    Write-Host -ForegroundColor Green "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Green "[•]" -NoNewline
                     Write-Output "$Url X-Frame-Options Found = $output"
                     $OutputString.Add("$Url X-Frame-Options Found = $output")
                     $element = $Url, "X-Frame-Options", $output
                     [void]$CsvArrayList.Add($element)
                 }
                 else{
-                    Write-Host -ForegroundColor Yellow "[â€¢]" -NoNewline
+                    Write-Host -ForegroundColor Yellow "[•]" -NoNewline
                     Write-Host "$Url X-Frame-Options Found = $output | " -NoNewline
                     Write-Host -ForegroundColor Yellow "Should be '1; mode=block' or 'sameorigin'" 
                     $OutputString.Add("$Url X-Frame-Options = $output | Should be '1; mode=block' or 'sameorigin'")
@@ -679,7 +710,7 @@ if($Url){
                     [void]$CsvArrayList.Add($element)
                 }
             } else {
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Output "$Url X-Frame-Options Not found"
                 $OutputString.Add("$Url X-Frame-Options Not found")
                 $element = $Url, "X-Frame-Options", "Not Found"
@@ -687,7 +718,7 @@ if($Url){
             }
             if ($response.Headers["Server"]) {
                 $output = $response.Headers["Server"]
-                Write-Host -ForegroundColor Red "[â€¢]" -NoNewline
+                Write-Host -ForegroundColor Red "[•]" -NoNewline
                 Write-Host "$Url Server = $output | " -NoNewline
                 Write-Host -ForegroundColor Red "This header should be surpressed if possible."
                 $OutputString.Add("$Url Server found")
@@ -699,8 +730,14 @@ if($Url){
     catch {
         Write-Host "An error occurred performing the request to $Url"
         Write-Host $_
+        if($Verbose){
+	    Write-Host $response
+	    Write-Output "-----------------------------------------------------"
+        }
     }
     Write-Output "-----------------------------------------------------"
+
+    
 
     if($Csv){
         Set-Content $Csv -Value $null
@@ -714,4 +751,3 @@ if($Url){
         $OutputString | Out-File $OutputFile
     }
 }
-
