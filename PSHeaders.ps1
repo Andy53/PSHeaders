@@ -250,9 +250,9 @@ if($File){
                     Write-Host $response.BaseResponse
                 }
                 else{
-                    Write-Host "Type: " $response.GetType()
+                    Write-Host ""
                     $output = [Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject]$response
-                    Write-Host $output.RawContent
+                    Write-Host $output.RawContent -NoNewline
                 }
 	        Write-Output "-----------------------------------------------------"
             }
@@ -541,9 +541,9 @@ if($Url){
                     Write-Host $response.BaseResponse
                 }
                 else{
-                    Write-Host "Type: " $response.GetType()
+                    Write-Host ""
                     $output = [Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject]$response
-                    Write-Host $output.RawContent
+                    Write-Host $output.RawContent -NoNewline
                 }
 	            Write-Output "-----------------------------------------------------"
             }
