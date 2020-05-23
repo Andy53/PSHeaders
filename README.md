@@ -35,6 +35,9 @@ Then use `pwsh PSHeaders.ps1 -Help` to see the help menu below along with a nice
 ## Examples   
 Perform a request to Google:     
 `./PSHeaders -u google.com`    
+
+Perfomr a request to all URLs/IP addresses in a file:    
+`./PSHeaders -f file.txt`    
     
 Perform a request to Google using the cookies 1=2;3=4;5=6; and send the request via a proxy at 127.0.0.1:8080:    
 `./PSHeaders -u http://google.com -Cookie "1=2;3=4;" -CookieName 5 -CookieValue 6 -Proxy http://127.0.0.1:8080`    
