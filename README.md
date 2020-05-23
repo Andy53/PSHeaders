@@ -19,7 +19,12 @@ Then use `pwsh PSHeaders.ps1 -Help` to see the help menu below along with a nice
     -Cert        - Specifices a PFX file to use as the client certificate    
     -Verb        - Specifies the HTTP Verb to use e.g. GET, PUT, POST etc.    
                    Currently Powershell versions prior to 6.0 can only use    
-                   Standard verbs.                                             
+                   Standard verbs.
+    -Cookie      - This parameter can be used to pass cookies directly out
+                   of HTTP requests for automatic parsing however cannot be
+                   used if the cookie contains a "=" character in the value.
+                   If you need to pass an "=" use the -CookieName and 
+                   -CookieValue parameters.                                             
     -CookieName  - Used when supplying a cookie with a web reqest.                      
                    Name of the cookie to be supplied. Must be used in               
                    conjunction with -CookieValue                               

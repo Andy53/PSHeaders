@@ -1,12 +1,34 @@
-param($File, $Url, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy, $Cert, $Verb, [Switch]$Verbose)
+param($File, $Url, $Cookie, $CookieValue, $CookieName, $Csv, [Switch]$Help, $OutputFile, $Proxy, $Cert, $Verb, [Switch]$Verbose)
 
-function Set-Cookie{
-    param([string] $cookieName, [string] $cookieString, [string]$urlString)
+$LinuxOS = $False
+$WindowsOS= $False
+$CsvArrayList = [System.Collections.ArrayList]@()
+$OutputString = New-Object System.Collections.Generic.List[string]
+$WriteToFile  = $false
+$WriteToCSV   = $false
+$session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
-    $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+function Set-Cookie([string]$urlString){
+    if($Cookie[$Cookie.length - 1] -eq ";"){
+        $Cookie = $Cookie.Substring(0,$Cookie.Length-1)
+    }
+    $thisCookie = New-Object System.Net.Cookie 
+    $cookies = $Cookie.Split(";")
+    foreach($element in $cookies){
+        $currentCookie = $element.Split("=")
+        $thisCookie.Name = $currentCookie[0]
+        $thisCookie.Value = $currentCookie[1]
+        $thisCookie.Domain = $urlString
+        $session.Cookies.Add($thisCookie);
+    }
+    return $session
+}
+
+function Set-Cookie-Params{
+    param([string]$urlString)
     $cookie = New-Object System.Net.Cookie 
     $cookie.Name = $cookieName
-    $cookie.Value = $cookieString
+    $cookie.Value = $cookieValue
     $cookie.Domain = $urlString
     $session.Cookies.Add($cookie);
     return $session
@@ -50,9 +72,6 @@ function Show-Help{
     exit
 }
 
-$LinuxOS = $False
-$WindowsOS= $False
-
 #if ($IsWindows -or $ENV:OS) {
 if($IsWindows -or $ENV:OS){
 add-type @"
@@ -74,8 +93,6 @@ else {
     $LinuxOS = $true
 }
 
-
-
 if($Help){
     Show-Help
     exit
@@ -85,11 +102,6 @@ if(!$File -and !$Url){
     Write-Output "A file containing URL's must be provided to -File or a URL provided to -Url"
     exit
 }
-
-$CsvArrayList = [System.Collections.ArrayList]@()
-$OutputString = New-Object System.Collections.Generic.List[string]
-$WriteToFile  = $false
-$WriteToCSV   = $false
 
 if($OutputFile){
     if(Test-Path (Split-Path -Path $OutputFile) -PathType Any){
@@ -161,7 +173,7 @@ if($File){
                 Write-Output "-----------------------------------------------------"
                 if($LinuxOS -eq $true){
                     if($CookieName -and $CookieValue){
-                        $Session = Set-Cookie($CookieName, $CookieValue, $line)
+                        $Session = Set-Cookie-Params($line)
                         if($Cert){
                             $Exists = Test-Path $Cert
                             if($Exists -eq $True){
@@ -195,10 +207,26 @@ if($File){
                             $response = iwr $line -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                         }
                     }
+                    if($Cookie){
+                        $Session = Set-Cookie($Url)
+                        if($Cert){
+                            $Exists = Test-Path $Cert
+                            if($Exists -eq $True){
+                                $Cert = Get-PfxCertificate -FilePath $Cert
+                                $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                            }
+                            else{
+                                $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
+                            }
+                        }
+                        else{
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
+                        }
+                    }
                 }
                 else{
                     if($CookieName -and $CookieValue){
-                        $Session = Set-Cookie($CookieName, $CookieValue, $line)
+                        $Session = Set-Cookie-Params($line)
                         if($Cert){
                             $Exists = Test-Path $Cert
                             if($Exists -eq $True){
@@ -212,7 +240,6 @@ if($File){
                         else{
                             $response = iwr $line -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy
                         }
-                    
                     }
                     elseif($CookieName -xor $CookieValue){
                         Write-Output "If a cookie is to be sent with the web request both CookieName and CookieValue must be provided."
@@ -231,6 +258,22 @@ if($File){
                         }
                         else{
                             $response = iwr $line -UseBasicParsing -Method $Verb -Proxy $Proxy
+                        }
+                    }
+                    if($Cookie){
+                        $Session = Set-Cookie($Url)
+                        if($Cert){
+                            $Exists = Test-Path $Cert
+                            if($Exists -eq $True){
+                                $Cert = Get-PfxCertificate -FilePath $Cert
+                                $response = iwr $line -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy -Certificate $Cert
+                            }
+                            else{
+                                $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
+                            }
+                        }
+                        else{
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy
                         }
                     }
                 }
@@ -451,7 +494,7 @@ if($Url){
             Write-Output "-----------------------------------------------------"
             if($LinuxOS -eq $true){
                 if($CookieName -and $CookieValue){
-                    $Session = Set-Cookie($CookieName, $CookieValue, $Url)
+                    $Session = Set-Cookie-Params($Url)
                     if($Cert){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
@@ -485,10 +528,27 @@ if($Url){
                         $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                     }
                 }
+                if($Cookie){
+                    $Session = Set-Cookie($Url)
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
+                    }
+                }
             }
             else{
                 if($CookieName -and $CookieValue){
-                    $Session = Set-Cookie($CookieName, $CookieValue, $Url)
+                    Write-Host "Here 1"
+                    $Session = Set-Cookie-Params($Url)
                     if($Cert){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
@@ -520,6 +580,23 @@ if($Url){
                     }
                     else{
                         $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
+                    }
+                }
+                if($Cookie){
+                    Write-Host "Here 2"
+                    $Session = Set-Cookie($Url)
+                    if($Cert){
+                        $Exists = Test-Path $Cert
+                        if($Exists -eq $True){
+                            $Cert = Get-PfxCertificate -FilePath $Cert
+                            $response = iwr $Url -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy -Certificate $Cert
+                        }
+                        else{
+                            $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
+                        }
+                    }
+                    else{
+                        $response = iwr $Url -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy
                     }
                 }
             }
