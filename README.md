@@ -30,4 +30,11 @@ Then use `pwsh PSHeaders.ps1 -Help` to see the help menu below along with a nice
                    conjunction with -CookieValue                               
     -CookieValue - Used when supplying a cookie with a web reqest.                  
                    Value of the cookie to be supplied. Must be used                 
-                   in conjunction with -CookieName                           
+                   in conjunction with -CookieName      
+
+## Examples   
+Perform a request to Google: 
+`./PSHeaders -u google.com`    
+    
+Perform a request to Google using the cookies test1=test2;test3=test4;test5=test6; and send the request via a proxy at http://127.0.0.1:8080:    
+`./PSHeaders -u http://google.com -Cookie "test1=test2;test3=test4;" -CookieName test5 -CookieValue test6 -Proxy http://127.0.0.1:8080`    
