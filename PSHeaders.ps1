@@ -45,7 +45,7 @@ function Show-Help{
     Write-Host "-----------------------------------------------------"
     Write-Host "Author : Andy Bowden"
     Write-Host "Email  : Andy.Bowden@coalfire.com"
-    Write-Host "Version: PSHeaders-0.2"
+    Write-Host "Version: PSHeaders-0.3"
     if($message -ne ""){
         Write-Host -ForegroundColor Red  "Error = $message"
     }
@@ -109,9 +109,14 @@ if(!$File -and !$Url){
 }
 
 if($OutputFile){
-    if(Test-Path (Split-Path -Path $OutputFile) -PathType Any){
-        $WriteToFile = $true
-
+    if(Split-Path -Path $OutputFile){  
+        if(Test-Path (Split-Path -Path $OutputFile) -PathType Any){
+            $WriteToFile = $true
+        }
+        else{
+            Write-Host -ForegroundColor Red "[•] ERROR - " -NoNewline
+            Write-Host "You have not entered a valid file name for the output file. Output will not be written to disk."
+        }
     }
     else{
         Write-Host -ForegroundColor Red "[•] ERROR - " -NoNewline
@@ -120,8 +125,14 @@ if($OutputFile){
 }
 
 if($Csv){
-    if(Test-Path (Split-Path -Path $Csv) -PathType Any){
-        $WriteToCSVe = $true
+    if(Split-Path -Path $Csv){  
+        if(Test-Path (Split-Path -Path $Csv) -PathType Any){
+            $WriteToCSVe = $true
+        }
+        else{
+            Write-Host -ForegroundColor Red "[•] ERROR - " -NoNewline
+            Write-Host "You have not entered a valid file name for the CSV file. Output will not be written in CSV format."
+        }
     }
     else{
         Write-Host -ForegroundColor Red "[•] ERROR - " -NoNewline
