@@ -197,7 +197,7 @@ if($File){
                                 $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                             }
                             else{
-                                $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
+                                $response = iwr $line -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                             }
                         }
                         else{
@@ -216,7 +216,7 @@ if($File){
                                 $response = iwr $line -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                             }
                             else{
-                                $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
+                                $response = iwr $line -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                             }
                         }
                         else{
@@ -232,7 +232,7 @@ if($File){
                                 $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                             }
                             else{
-                                $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
+                                $response = iwr $line -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                             }
                         }
                         else{
@@ -250,7 +250,7 @@ if($File){
                                 $response = iwr $line -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy -Certificate $Cert
                             }
                             else{
-                                $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
+                                $response = iwr $line -UseBasicParsing -Method $Verb -Proxy $Proxy
                             }
                         }
                         else{
@@ -269,7 +269,7 @@ if($File){
                                 $response = iwr $line -UseBasicParsing -Method $Verb -Proxy $Proxy -Certificate $Cert
                             }
                             else{
-                                $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
+                                $response = iwr $line -UseBasicParsing -Method $Verb -Proxy $Proxy
                             }
                         }
                         else{
@@ -285,7 +285,7 @@ if($File){
                                 $response = iwr $line -UseBasicParsing -WebSession $Session -Method $Verb -Proxy $Proxy -Certificate $Cert
                             }
                             else{
-                                $response = iwr $Url -UseBasicParsing -Method $Verb -Proxy $Proxy
+                                $response = iwr $line -UseBasicParsing -Method $Verb -Proxy $Proxy
                             }
                         }
                         else{
@@ -515,14 +515,14 @@ if($Url){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                            $response = iwr $Url -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                         }
                         else{
                             $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
+                        $response = iwr $Url -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                     }
                 }
                 elseif($CookieName -xor $CookieValue){
@@ -550,20 +550,19 @@ if($Url){
                         $Exists = Test-Path $Cert
                         if($Exists -eq $True){
                             $Cert = Get-PfxCertificate -FilePath $Cert
-                            $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
+                            $response = iwr $Url -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck -Certificate $Cert
                         }
                         else{
                             $response = iwr $Url -UseBasicParsing -CustomMethod $Verb -Proxy $Proxy
                         }
                     }
                     else{
-                        $response = iwr $line -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
+                        $response = iwr $Url -UseBasicParsing -WebSession $Session -CustomMethod $Verb -Proxy $Proxy -SkipCertificateCheck
                     }
                 }
             }
             else{
                 if($CookieName -and $CookieValue){
-                    Write-Host "Here 1"
                     $Session = Set-Cookie-Params($Url)
                     if($Cert){
                         $Exists = Test-Path $Cert
@@ -599,7 +598,6 @@ if($Url){
                     }
                 }
                 if($Cookie){
-                    Write-Host "Here 2"
                     $Session = Set-Cookie($Url)
                     if($Cert){
                         $Exists = Test-Path $Cert
