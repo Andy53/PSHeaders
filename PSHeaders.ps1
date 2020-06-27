@@ -37,19 +37,22 @@ function Set-Cookie-Params{
 function Show-Help{
     param([string] $message = "")
 
-    Write-Host "    ____  _____ __  __               __              "
-    Write-Host "   / __ \/ ___// / / /__  ____ _____/ /__  __________"
-    Write-Host "  / /_/ /\__ \/ /_/ / _ \/ __ `/ __  / _ \/ ___/ ___/"
-    Write-Host " / ____/___/ / __  /  __/ /_/ / /_/ /  __/ /  (__  ) "
-    Write-Host "/_/    /____/_/ /_/\___/\__,_/\__,_/\___/_/  /____/  "
-    Write-Host "-----------------------------------------------------"
-    Write-Host "Author : Andy Bowden"
-    Write-Host "Email  : Andy.Bowden@coalfire.com"
-    Write-Host "Version: PSHeaders-0.3"
+    Write-Host -ForegroundColor DarkYellow "    ____  _____ __  __               __              "
+    Write-Host -ForegroundColor DarkYellow "   / __ \/ ___// / / /__  ____ _____/ /__  __________"
+    Write-Host -ForegroundColor DarkYellow "  / /_/ /\__ \/ /_/ / _ \/ __ `/ __  / _ \/ ___/ ___/"
+    Write-Host -ForegroundColor DarkYellow " / ____/___/ / __  /  __/ /_/ / /_/ /  __/ /  (__  ) "
+    Write-Host -ForegroundColor DarkYellow "/_/    /____/_/ /_/\___/\__,_/\__,_/\___/_/  /____/  "
+    Write-Host -ForegroundColor DarkGray "-------------------------------------------------------"
+    Write-Host -ForegroundColor DarkYellow "Author :" -NoNewline 
+    Write-Host " Andy Bowden"
+    Write-Host -ForegroundColor DarkYellow "Email  :" -NoNewline 
+    Write-Host " Andy.Bowden@coalfire.com"
+    Write-Host -ForegroundColor DarkYellow "Version:" -NoNewline 
+    Write-Host " PSHeaders-0.3"
     if($message -ne ""){
         Write-Host -ForegroundColor Red  "Error = $message"
     }
-    Write-Host "-----------------------------------------------------"
+    Write-Host -ForegroundColor DarkGray "-------------------------------------------------------"
     Write-Host "Usage:"
     Write-Host "    -Help        - Display this message."
     Write-Host "    -Url         - Specifies the URL to use"
