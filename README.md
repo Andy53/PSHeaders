@@ -1,5 +1,5 @@
 # PSHeaders
-A Poweshell script for testing HTTP headers from a server for best security practices.
+A Poweshell script for auditing HTTP headers from a server for best security practices.
 
 ## Setup
 The script can simply be downloaded on Windows and run from a Powershell terminal.
