@@ -36,7 +36,7 @@ Then use `pwsh PSHeaders.ps1 -Help` to see the help menu below along with a nice
 Perform a request to Google:     
 `./PSHeaders -u google.com`    
 
-Perfomr a request to all URLs/IP addresses in a file:    
+Perform a request to all URLs/IP addresses in a file:    
 `./PSHeaders -f file.txt`   
 
 Perform a request to Google and output to a CSV file:     
